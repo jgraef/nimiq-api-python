@@ -20,7 +20,7 @@ Coming soon.
 
 1. `import nimiqrpc`
 1. `nimiq = NimiqApi()` or `NimiqApi('http://localhost:someport')`
-1. `nimiq.get_block_by_number(0)`
+1. Do whatever you like, e.g. get the genesis block: `nimiq.get_block_by_number(0)`
 
 Documentation coming soon.
 
