@@ -51,7 +51,7 @@ def block_listener(nimiq):
     :param nimiq: The Nimiq API
     :return: The iterable that yields new blocks.
     """
-    height = nimiq.get_block_height()
+    height = nimiq.block_number()
     while True:
         block = nimiq.get_block_by_number(height)
         if block is None:
