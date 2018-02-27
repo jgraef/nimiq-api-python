@@ -105,7 +105,7 @@ class NimiqApi:
         """
         :return: True if mining is enabled, False otherwise.
         """
-        return self._rpc.call("mempool")
+        return self._rpc.call("mining")
 
     def hashrate(self):
         """
