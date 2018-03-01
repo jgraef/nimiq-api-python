@@ -16,7 +16,10 @@ class JsonRpcError(Exception):
 
 class JsonRpcRemoteException(Exception):
     """ Exception on the remote server """
-    pass
+    def __init__(self, req, resp):
+        self.request = req
+        self.response = resp
+        super(JsonRpcRemoteException, self).__init__("Remote Error: {!s}".format(resp["error"]))
 
 
 class JsonRpcClient:
