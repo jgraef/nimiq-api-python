@@ -76,7 +76,6 @@ class NimiqApi:
             "fee": ensure_satoshi(fee),
         })
 
-
     def get_transaction_by_hash(self, hash: str):
         """
         Gets transaction data by transaction hash.
@@ -152,7 +151,7 @@ class NimiqApi:
     def get_block_by_number(self, number: int, include_txs: bool = False) -> dict:
         """
         Get block by number
-        :param hash: Block number
+        :param number: Block number
         :param include_txs: Whether to include transactions
         :return: The block
         """
