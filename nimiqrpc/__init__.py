@@ -1,1 +1,2 @@
-from .api import NimiqApi
+from .api import *
+from .util import *

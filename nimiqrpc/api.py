@@ -1,4 +1,4 @@
-__all__ = ["NimiqApi"]
+__all__ = ["NimiqApi", "ACCOUNT_BASIC", "ACCOUNT_VESTING", "ACCOUNT_HTLC"]
 
 from binascii import hexlify, unhexlify
 
@@ -7,6 +7,11 @@ from typing import Union
 
 from .jsonrpc import JsonRpcClient
 from .util import satoshi_to_coin, ensure_satoshi
+
+
+ACCOUNT_BASIC = 0
+ACCOUNT_VESTING = 1
+ACCOUNT_HTLC = 2
 
 
 class NimiqApi:
@@ -60,13 +65,15 @@ class NimiqApi:
         """
         return self._rpc.call("sendRawTransaction", hexlify(tx).decode())
 
-    def send_transaction(self, from_addr: str, to_addr: str, value: Union[int, Decimal], fee: Union[int, Decimal]):
+    def send_transaction(self, from_addr: str, to_addr: str, value: Union[int, Decimal], fee: Union[int, Decimal], to_type: int = ACCOUNT_BASIC, data: bytes = None):
         """
         Sends a transaction
         :param from_addr: Sender address
         :param to_addr: Receiver address
         :param value: Value in Satoshis (int) or NIMs (Decimal)
         :param fee: Fee in Satoshis (int) or NIMs (Decimal)
+        :param to_type: Receiver account type (default BASIC)
+        :param data: Transaction data needed for extended transactions (bytes)
         :return: Transaction hash
         """
         return self._rpc.call("sendTransaction", {
@@ -74,6 +81,8 @@ class NimiqApi:
             "to": to_addr,
             "value": ensure_satoshi(value),
             "fee": ensure_satoshi(fee),
+            "data": None if data is None else hexlify(data),
+            "toType": to_type
         })
 
 

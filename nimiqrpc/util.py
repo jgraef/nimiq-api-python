@@ -1,4 +1,4 @@
-__all__ = ["satoshi_to_coin", "coin_to_satoshi", "ensure_coin", "block_listener"]
+__all__ = ["satoshi_to_coin", "coin_to_satoshi", "ensure_satoshi", "block_listener"]
 
 import logging
 
@@ -45,13 +45,16 @@ def ensure_satoshi(value: Union[int, Decimal]) -> int:
         raise ValueError("Expected value to be either int or Decimal")
 
 
-def block_listener(nimiq):
+def block_listener(nimiq, first_block = None):
     """
     An interable that yields blocks as they are added to the block chain.
     :param nimiq: The Nimiq API
     :return: The iterable that yields new blocks.
     """
-    height = nimiq.block_number()
+    if first_block is None:
+        height = nimiq.block_number()
+    else:
+        height = first_block
     while True:
         block = nimiq.get_block_by_number(height)
         if block is None:
