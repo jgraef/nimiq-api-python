@@ -25,12 +25,13 @@ class JsonRpcRemoteException(Exception):
 class JsonRpcClient:
     """ A very minimal JSON RPC client """
 
-    def __init__(self, url):
+    def __init__(self, url, credentials=None):
         """
         Creates a JSON RPC client
         :param url: The URL to the API endpoint
         """
         self.url = url
+        self.credentials = credentials
         self.session = requests.Session()
         self.call_ids = count(1)
 
@@ -56,14 +57,15 @@ class JsonRpcClient:
 
         resp = requests.post(
             self.url,
-            json=rpc_req
+            json=rpc_req,
+            auth=self.credentials
         )
         resp.raise_for_status()
 
         rpc_resp = resp.json()
         logger.info("Response (call_id={:d}): {!r}".format(call_id, rpc_resp))
         if rpc_resp.get("id") != call_id:
-            raise JsonRpcError("Response with incorrect call ID. Expected {:d}, but received {:d}".format(call_id, rpc_resp.get("id")))
+            raise JsonRpcError("Response with incorrect call ID. Expected {:d}, but received {!s}".format(call_id, rpc_resp.get("id")))
 
         result = rpc_resp.get("result")
         error = rpc_resp.get("error")

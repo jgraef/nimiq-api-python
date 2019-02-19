@@ -1,4 +1,4 @@
-__all__ = ["NimiqApi", "ACCOUNT_BASIC", "ACCOUNT_VESTING", "ACCOUNT_HTLC"]
+__all__ = ["NimiqApi", "ACCOUNT_BASIC", "ACCOUNT_VESTING", "ACCOUNT_HTLC", "TX_NONE", "TX_CONTRACT_CREATION"]
 
 from binascii import hexlify, unhexlify
 
@@ -12,6 +12,9 @@ from .util import satoshi_to_coin, ensure_satoshi
 ACCOUNT_BASIC = 0
 ACCOUNT_VESTING = 1
 ACCOUNT_HTLC = 2
+
+TX_NONE = 0
+TX_CONTRACT_CREATION = 1
 
 
 class NimiqApi:
@@ -51,11 +54,11 @@ class NimiqApi:
 
     """
 
-    def __init__(self, url="http://localhost:8648"):
+    def __init__(self, url="http://localhost:8648", credentials=None):
         """
         :param url: URL to RPC endpoint (default: ``http://localhost:8648``)
         """
-        self._rpc = JsonRpcClient(url)
+        self._rpc = JsonRpcClient(url, credentials)
 
     def send_raw_transaction(self, tx: bytes):
         """
@@ -65,7 +68,7 @@ class NimiqApi:
         """
         return self._rpc.call("sendRawTransaction", hexlify(tx).decode())
 
-    def send_transaction(self, from_addr: str, to_addr: str, value: Union[int, Decimal], fee: Union[int, Decimal], to_type: int = ACCOUNT_BASIC, data: bytes = None):
+    def send_transaction(self, from_addr: str, to_addr: str, value: Union[int, Decimal], fee: Union[int, Decimal], to_type: int = ACCOUNT_BASIC, flags: int = TX_NONE, data: bytes = None):
         """
         Sends a transaction
         :param from_addr: Sender address
@@ -81,7 +84,8 @@ class NimiqApi:
             "to": to_addr,
             "value": ensure_satoshi(value),
             "fee": ensure_satoshi(fee),
-            "data": None if data is None else hexlify(data),
+            "flags": flags,
+            "data": None if data is None else hexlify(data).decode(),
             "toType": to_type
         })
 
@@ -94,20 +98,18 @@ class NimiqApi:
         tx = self._rpc.call("getTransactionByHash", hash)
         if tx.get("data") is not None:
             tx["data"] = unhexlify(tx["data"])
-        # NOTE: The official client doesn't return raw transaction data
-        if tx.get("raw") is not None:
-            tx["raw"] = unhexlify(tx["raw"])
+        if tx.get("flags") is not None:
+            tx["flags"] = tx["flags"]
         return tx
-
-    # TODO: getTransactionByBlockHashAndIndex,
-    #       getTransactionByBlockNumberAndIndex,
-    #       getTransactionReceipt
 
     def mempool(self):
         """
         :return: A list of transactions that are currently in the mempool.
         """
         return self._rpc.call("mempool")
+
+    def mempool_content(self, include_txs=False):
+        return self._rpc.call("mempoolContent", include_txs)
 
     def mining(self) -> bool:
         """
@@ -165,3 +167,34 @@ class NimiqApi:
         :return: The block
         """
         return self._rpc.call("getBlockByNumber", number, include_txs)
+
+    def get_block_transaction_count_by_number(self, number: int) -> int:
+        return self._rpc.call("getBlockTransactionCountByNumber", number)
+
+    def get_block_transaction_count_by_hash(self, hash: str) -> int:
+        return self._rpc.call("getBlockTransactionCountByHash", hash)
+
+    def get_transaction_by_block_hash_and_index(self, hash: str, index: int) -> dict:
+        return self._rpc.call("getTransactionByBlockHashAndIndex", hash, index)
+
+    def get_transaction_by_block_number_and_index(self, number: int, index: int) -> dict:
+        return self._rpc.call("getTransactionByBlockNumberAndIndex", number, index)
+
+    def get_transaction_receipt(self, hash: str) -> dict:
+        return self._rpc.call("getTransactionReceipt", hash)
+
+    def get_transactions_by_address(self, address: str, limit: int = None):
+        return self._rpc.call("getTransactionsByAddress", address, limit)
+
+    def peer_count(self):
+        return self._rpc.call("peerCount")
+
+    def peer_list(self):
+        return self._rpc.call("peerList")
+
+    def peer_state(self, peer, state = None):
+        return self._rpc.call("peerState", peer, state)
+
+    def consensus(self):
+        return self._rpc.call("consensus")
+

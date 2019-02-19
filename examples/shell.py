@@ -1,5 +1,9 @@
 import code
 from functools import partial
+try:
+    from pprintpp import pprint
+except ImportError:
+    from pprint import pprint
 
 from nimiqrpc import NimiqApi
 
@@ -52,11 +56,12 @@ Examples:
 def shell():
     nimiq = NimiqApi()
     methods = {k: getattr(nimiq, k) for k in dir(nimiq) if not k.startswith("_")}
-    METHOD_HELP = "".join(["{!s}:\n{!s}\n\n".format(name, method.__doc__.strip()) for name, method in methods.items()])
+    METHOD_HELP = "".join(["{!s}:\n{!s}\n\n".format(name, method.__doc__.strip()) for name, method in methods.items() if method.__doc__])
 
     local = dict(
         _nimiq=nimiq,
-        help=partial(print, HELP.format(method_help = METHOD_HELP))
+        help=partial(print, HELP.format(method_help = METHOD_HELP)),
+        pprint=pprint
     )
     local.update(methods)
     code.interact(BANNER, local=local)
