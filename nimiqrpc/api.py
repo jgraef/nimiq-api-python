@@ -98,8 +98,6 @@ class NimiqApi:
         tx = self._rpc.call("getTransactionByHash", hash)
         if tx.get("data") is not None:
             tx["data"] = unhexlify(tx["data"])
-        if tx.get("flags") is not None:
-            tx["flags"] = tx["flags"]
         return tx
 
     def mempool(self):
@@ -198,3 +196,11 @@ class NimiqApi:
     def consensus(self):
         return self._rpc.call("consensus")
 
+    def import_raw_key(self, key_data, password=""):
+        return self._rpc.call("importRawKey", hexlify(key_data).decode(), password)
+
+    def lock_account(self, address):
+        return self._rpc.call("lockAccount", address)
+
+    def unlock_account(self, address, password=""):
+        return self._rpc.call("unlockAccount", address, password)
