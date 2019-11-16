@@ -54,10 +54,13 @@ class NimiqApi:
 
     """
 
-    def __init__(self, url="http://localhost:8648", credentials=None):
+    def __init__(self, url=None, credentials=None):
         """
         :param url: URL to RPC endpoint (default: ``http://localhost:8648``)
+        :param credentials: Tuple with RPC username and password
         """
+        if url is None:
+            url = "http://localhost:8648"
         self._rpc = JsonRpcClient(url, credentials)
 
     def send_raw_transaction(self, tx: bytes):

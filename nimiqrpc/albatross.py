@@ -8,6 +8,8 @@ from .api import NimiqApi, ensure_satoshi
 
 ACCOUNT_STAKING = 3
 
+EPOCH_LENGTH = 128
+
 # Address of Staking Contract in DevNet
 STAKING_CONTRACT_ADDRESS = "NQ60 GA6V BV8S YVX1 XGCY 88LR D2K6 G2P4 U9MH"
 
@@ -22,7 +24,7 @@ class AlbatrossApi(NimiqApi):
 
     def stake(self, reward_address: str, staker_address: str, value: Union[int, Decimal]):
         validator_info = self.validator_key()
-        self._rpc.call(
+        return self._rpc.call(
             "stake",
             hexlify(validator_info["validator_key"]).decode(),
             hexlify(validator_info["proof_of_knowledge"]).decode(),
@@ -30,3 +32,10 @@ class AlbatrossApi(NimiqApi):
             ensure_satoshi(value),
             reward_address
         )
+
+    def list_stakes(self):
+        return self._rpc.call("listStakes")
+
+
+def macro_block_before(block_number: int) -> int:
+    return block_number // EPOCH_LENGTH * EPOCH_LENGTH

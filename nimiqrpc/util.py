@@ -6,6 +6,9 @@ from decimal import Decimal
 from time import sleep
 from typing import Union
 
+from .jsonrpc import JsonRpcRemoteException
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +48,7 @@ def ensure_satoshi(value: Union[int, Decimal]) -> int:
         raise ValueError("Expected value to be either int or Decimal")
 
 
-def block_listener(nimiq, first_block = None):
+def block_listener(nimiq, first_block = None, sleep_time=1):
     """
     An interable that yields blocks as they are added to the block chain.
     :param nimiq: The Nimiq API
@@ -56,9 +59,14 @@ def block_listener(nimiq, first_block = None):
     else:
         height = first_block
     while True:
-        block = nimiq.get_block_by_number(height)
+        # FIXME: core-rs returns an error when there is no block
+        try:
+            block = nimiq.get_block_by_number(height)
+        except JsonRpcRemoteException:
+            block = None
+
         if block is None:
-            sleep(1)
+            sleep(sleep_time)
         else:
             yield block
             height += 1
